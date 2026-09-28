@@ -1,4 +1,5 @@
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class Main {
 
@@ -510,6 +511,202 @@ for (FitnessSession bookedSession
             bookedSession.getSessionName() + " - " +
             bookedSession.getStudio() + " - " +
             bookedSession.getStartTime()
+    );
+}
+
+// ==================================================
+// MAINTENANCE WORKFLOW TEST
+// ==================================================
+
+System.out.println();
+System.out.println("Maintenance Workflow Test");
+System.out.println("------------------------------------------");
+
+MaintenanceService maintenanceService =
+        new MaintenanceService(equipmentService);
+
+try {
+
+    // Instructor reports a fault.
+    maintenanceService.reportFault(
+            "MR001",
+            "E001",
+            "Treadmill belt is making an unusual noise.",
+            UrgencyLevel.HIGH,
+            "I001"
+    );
+
+    MaintenanceRequest request =
+            maintenanceService.findRequest("MR001");
+
+    System.out.println("Fault reported successfully.");
+    System.out.println(
+            "Request: " + request.getRequestId()
+    );
+    System.out.println(
+            "Reported By: " + request.getReportedBy()
+    );
+    System.out.println(
+            "Urgency: " + request.getUrgency()
+    );
+    System.out.println(
+            "Request Status: " + request.getStatus()
+    );
+    System.out.println(
+            "Equipment Status: " +
+            equipmentService
+                    .findEquipment("E001")
+                    .getStatus()
+    );
+
+
+    // Administrator assigns maintenance.
+    System.out.println();
+    System.out.println("Assigning maintenance...");
+
+    maintenanceService.assignMaintenance(
+            "MR001",
+            "Technician John"
+    );
+
+    System.out.println(
+            "Assigned To: " + request.getAssignedTo()
+    );
+    System.out.println(
+            "Request Status: " + request.getStatus()
+    );
+    System.out.println(
+            "Equipment Status: " +
+            equipmentService
+                    .findEquipment("E001")
+                    .getStatus()
+    );
+
+
+    // Maintenance work is completed.
+    System.out.println();
+    System.out.println("Completing maintenance...");
+
+    maintenanceService.completeMaintenance(
+            "MR001"
+    );
+
+    System.out.println(
+            "Request Status: " + request.getStatus()
+    );
+    System.out.println(
+            "Equipment Status: " +
+            equipmentService
+                    .findEquipment("E001")
+                    .getStatus()
+    );
+
+} catch (
+        DuplicateDataException |
+        InvalidMaintenanceStateException e) {
+
+    System.out.println(
+            "ERROR: " + e.getMessage()
+    );
+
+} catch (IllegalArgumentException e) {
+
+    System.out.println(
+            "ERROR: " + e.getMessage()
+    );
+}
+
+System.out.println();
+System.out.println("Invalid Maintenance Transition Test");
+System.out.println("------------------------------------------");
+
+try {
+
+    System.out.println(
+            "Attempting to assign completed request MR001..."
+    );
+
+    maintenanceService.assignMaintenance(
+            "MR001",
+            "Technician Sarah"
+    );
+
+} catch (InvalidMaintenanceStateException e) {
+
+    System.out.println(
+            "ERROR: " + e.getMessage()
+    );
+}
+
+// ==================================================
+// AUTHORIZATION TEST
+// ==================================================
+
+System.out.println();
+System.out.println("Maintenance Log Authorization Test");
+System.out.println("------------------------------------------");
+
+// OOP CONCEPT: Polymorphism
+// Both variables use the User reference type,
+// but contain different user objects.
+User adminUser =
+        new Administrator("A002", "Alex");
+
+User memberUser =
+        new Member("M002", "Taylor");
+
+
+// Test Administrator access
+try {
+
+    System.out.println(
+            "Alex attempting to access maintenance log..."
+    );
+
+    List<MaintenanceRequest> maintenanceLog =
+            maintenanceService.getAllRequests(adminUser);
+
+    System.out.println(
+            "ACCESS GRANTED: Administrator can view maintenance log."
+    );
+
+    for (MaintenanceRequest request : maintenanceLog) {
+
+        System.out.println(
+                request.getRequestId() +
+                " - Equipment: " +
+                request.getEquipmentId() +
+                " - " +
+                request.getStatus()
+        );
+    }
+
+} catch (UnauthorizedAccessException e) {
+
+    System.out.println(
+            "ERROR: " + e.getMessage()
+    );
+}
+
+
+// Test Member access
+try {
+
+    System.out.println();
+    System.out.println(
+            "Taylor attempting to access maintenance log..."
+    );
+
+    maintenanceService.getAllRequests(memberUser);
+
+    System.out.println(
+            "ACCESS GRANTED"
+    );
+
+} catch (UnauthorizedAccessException e) {
+
+    System.out.println(
+            "ACCESS DENIED: " + e.getMessage()
     );
 }
 

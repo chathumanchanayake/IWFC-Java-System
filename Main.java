@@ -834,6 +834,133 @@ for (Equipment item :
     );
 }
 
+System.out.println();
+System.out.println("User Account Management Test");
+System.out.println("------------------------------------------");
+
+UserService userService =
+        new UserService();
+
+try {
+
+    // DESIGN PATTERN: Factory Pattern
+    // Create different types of users through UserFactory.
+    User accountAdmin =
+            UserFactory.createUser(
+                    "Administrator",
+                    "A010",
+                    "Alex"
+            );
+
+   User accountInstructor =
+            UserFactory.createUser(
+                    "Instructor",
+                    "I010",
+                    "Sam"
+            );
+
+    User accountMember =
+            UserFactory.createUser(
+                    "Member",
+                    "M010",
+                    "Taylor"
+            );
+
+
+    // Add users to the system.
+   userService.addUser(
+        accountAdmin,
+        accountAdmin
+);
+
+userService.addUser(
+        accountAdmin,
+        accountInstructor
+);
+
+userService.addUser(
+        accountAdmin,
+        accountMember
+);
+
+
+    // Display all registered users.
+    System.out.println("Registered Users:");
+
+    for (User registeredUser :
+            userService.getAllUsers()) {
+
+        System.out.println(
+                registeredUser.getUserId()
+                + " - "
+                + registeredUser.getName()
+                + " - "
+                + registeredUser.getRole()
+        );
+    }
+
+
+    // Deliberately attempt to add a duplicate user ID.
+    System.out.println();
+    System.out.println(
+            "Testing duplicate user ID..."
+    );
+
+    User duplicateUser =
+            UserFactory.createUser(
+                    "Member",
+                    "M010",
+                    "Another Taylor"
+            );
+
+    userService.addUser(
+        accountAdmin,
+        duplicateUser
+);
+
+} catch (DuplicateDataException |
+       UnauthorizedAccessException e) {
+
+    System.out.println(
+            "ERROR: " + e.getMessage()
+    );
+}
+
+System.out.println();
+System.out.println(
+        "Testing unauthorized user account access..."
+);
+
+try {
+
+    User unauthorizedUser =
+            UserFactory.createUser(
+                    "Member",
+                    "M011",
+                    "New Member"
+            );
+
+    // Taylor is a Member, so this should be rejected.
+    User requestingMember =
+        UserFactory.createUser(
+                "Member",
+                "M010",
+                "Taylor"
+        );
+
+userService.addUser(
+        requestingMember,
+        unauthorizedUser
+);
+
+} catch (DuplicateDataException |
+         UnauthorizedAccessException e) {
+
+    System.out.println(
+            "ACCESS DENIED: " + e.getMessage()
+    );
+}
+
     } // End of main()
 
 

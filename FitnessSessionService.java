@@ -1,7 +1,16 @@
 import java.time.LocalDateTime;
 import java.util.List;
+import java.time.LocalTime;
 
 public class FitnessSessionService {
+
+   
+//Sessions must be scheduled between 6:00 AM and 10:00 PM.
+private static final LocalTime OPENING_TIME =
+        LocalTime.of(6, 0);
+
+private static final LocalTime CLOSING_TIME =
+        LocalTime.of(22, 0);
 
     private final FitnessSessionRepository sessionRepository;
 
@@ -29,6 +38,20 @@ public void scheduleSession(
                 "Session end time must be after the start time."
         );
     }
+
+    
+// Sessions cannot be scheduled outside the fitness center's operating hours.
+if (startTime.toLocalTime().isBefore(OPENING_TIME)
+        || endTime.toLocalTime().isAfter(CLOSING_TIME)) {
+
+    throw new InvalidBookingException(
+            "Session must be scheduled between "
+            + OPENING_TIME +
+            " and " +
+            CLOSING_TIME +
+            "."
+    );
+}
 
 
 // Check existing sessions for studio conflicts.

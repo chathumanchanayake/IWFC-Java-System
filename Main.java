@@ -326,6 +326,39 @@ public class Main {
             );
         }
 
+        System.out.println();
+System.out.println("Outside Operating Hours Test");
+System.out.println("------------------------------------------");
+
+try {
+
+    System.out.println(
+            "Attempting to schedule a session at 5:00 AM..."
+    );
+
+    sessionService.scheduleSession(
+        "S005",
+        "Early Morning Yoga",
+        "Studio C",
+        LocalDateTime.of(2026, 10, 1, 5, 0),
+        LocalDateTime.of(2026, 10, 1, 6, 0),
+        "I001",
+        "E001"
+);
+
+    System.out.println(
+            "Session scheduled successfully."
+    );
+
+} catch (
+        DuplicateDataException |
+        InvalidBookingException e) {
+
+    System.out.println(
+            "ERROR: " + e.getMessage()
+    );
+}
+
 
         // ==================================================
         // STUDIO DOUBLE-BOOKING TEST
@@ -525,6 +558,26 @@ System.out.println("------------------------------------------");
 MaintenanceService maintenanceService =
         new MaintenanceService(equipmentService);
 
+// DESIGN PATTERN: Observer Pattern
+// Administrator and Instructor subscribe to maintenance status notifications.
+User notificationAdmin =
+        new Administrator("A004", "Alex");
+
+User notificationInstructor =
+        new Instructor("I004", "Sam");
+
+maintenanceService.addObserver(notificationAdmin);
+maintenanceService.addObserver(notificationInstructor);
+
+// DESIGN PATTERN: Facade Pattern
+// Main can use one simplified interface to access the major IWFC subsystems.
+IWFCFacade iwfcFacade =
+        new IWFCFacade(
+                equipmentService,
+                sessionService,
+                maintenanceService
+        );
+
 try {
 
     // Instructor reports a fault.
@@ -707,6 +760,77 @@ try {
 
     System.out.println(
             "ACCESS DENIED: " + e.getMessage()
+    );
+}
+
+// ==================================================
+// FACTORY PATTERN TEST
+// ==================================================
+
+System.out.println();
+System.out.println("Factory Pattern Test");
+System.out.println("------------------------------------------");
+
+User factoryAdmin =
+        UserFactory.createUser(
+                "Administrator",
+                "A003",
+                "Factory Alex"
+        );
+
+User factoryInstructor =
+        UserFactory.createUser(
+                "Instructor",
+                "I003",
+                "Factory Sam"
+        );
+
+User factoryMember =
+        UserFactory.createUser(
+                "Member",
+                "M003",
+                "Factory Taylor"
+        );
+
+displayUser(factoryAdmin);
+displayUser(factoryInstructor);
+displayUser(factoryMember);
+
+System.out.println();
+System.out.println("Facade Pattern Test");
+System.out.println("------------------------------------------");
+
+try {
+
+    iwfcFacade.addEquipment(
+            "E003",
+            "Rowing Machine",
+            "Cardio Zone"
+    );
+
+    System.out.println(
+            "E003 added successfully through IWFCFacade."
+    );
+
+} catch (DuplicateDataException e) {
+
+    System.out.println(
+            "ERROR: " + e.getMessage()
+    );
+}
+
+System.out.println();
+System.out.println("Equipment accessed through Facade:");
+
+for (Equipment item :
+        iwfcFacade.getAllEquipment()) {
+
+    System.out.println(
+            item.getEquipmentId()
+            + " - "
+            + item.getName()
+            + " - "
+            + item.getStatus()
     );
 }
 

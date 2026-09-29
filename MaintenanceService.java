@@ -8,6 +8,11 @@ public class MaintenanceService {
     private final List<MaintenanceRequest> maintenanceRequests =
             new ArrayList<>();
 
+ // DESIGN PATTERN: Observer Pattern
+// Stores users that want to receive maintenance notifications.
+private final List<NotificationObserver> observers =
+        new ArrayList<>();
+
 
 // MaintenanceService uses EquipmentService so maintenance actions can update equipment status.
 private final EquipmentService equipmentService;
@@ -136,6 +141,15 @@ if (equipment != null) {
             EquipmentStatus.UNDER_MAINTENANCE
     );
 }
+
+// Notify registered users about the status change.
+notifyObservers(
+        "Maintenance request " +
+        request.getRequestId() +
+        " has been assigned to " +
+        assignedTo +
+        "."
+);
 }
 
 // Completes an assigned maintenance request.
@@ -168,5 +182,32 @@ if (equipment != null) {
             EquipmentStatus.OPERATIONAL
     );
 }
+
+// Notify registered users that maintenance is complete.
+notifyObservers(
+        "Maintenance request " +
+        request.getRequestId() +
+        " has been completed."
+);
+}
+
+// DESIGN PATTERN: Observer Pattern
+// Registers an observer to receive maintenance updates.
+public void addObserver(
+        NotificationObserver observer) {
+
+    if (!observers.contains(observer)) {
+        observers.add(observer);
+    }
+}
+
+// DESIGN PATTERN: Observer Pattern
+// Sends the same maintenance update to all registered observers.
+private void notifyObservers(String message) {
+
+    for (NotificationObserver observer : observers) {
+
+        observer.update(message);
+    }
 }
 }
